@@ -77,7 +77,7 @@ class ListaDoble:
             actual = actual.siguiente
 
     def __reversed__(self):                      # reversed(l)
-        # Coste de cada paso: O(?)   Recorrido completo: O(?)
+        # Coste de cada paso: O(1)   Recorrido completo: O(n)
         # TODO: igual que __iter__ pero empezando por la cola y yendo hacia atras.
         actual = self.cola
         while actual is not None:
@@ -119,8 +119,8 @@ class ListaDoble:
         return nuevo
 
     def insert_last(self, dato):
-        # Coste: O(?)
-        # TODO: simetrico a insert_first, trabajando sobre la cola.
+        # Coste: O(1)
+        # simetrico a insert_first, trabajando sobre la cola.
         nuevo = NodoDoble(dato)
         if self.cola == None:
             self.cabeza = self.cola = nuevo
@@ -130,6 +130,7 @@ class ListaDoble:
             self.cola.siguiente = nuevo
             self.cola = nuevo
 
+        self.tamano += 1
         return nuevo
 
 
@@ -159,7 +160,18 @@ class ListaDoble:
         if nodo == self.cola:
             return self.insert_last(dato)
 
+        nuevo = NodoDoble(dato)
+
+        nuevo.siguiente = nodo.siguiente
+        nuevo.anterior = nodo
+        nodo.siguiente.anterior = nuevo
+        nodo.siguiente = nuevo
+
+        self.tamano += 1
+        return nuevo
+
         
+
     # --- Borrado ------------------------------------------------------------
 
     def delete_node(self, nodo):
@@ -169,42 +181,76 @@ class ListaDoble:
         # TODO: reconectar el enlace izquierdo (o mover cabeza si nodo era la cabeza)
         # TODO: reconectar el enlace derecho (o mover cola si nodo era la cola)
         # TODO: actualizar tamano
-        if nodo == self.cabeza:
-                    self.cabeza = nodo.siguiente
         
-        else:
+        if nodo != self.cabeza and nodo != self.cola:
             nodo.anterior.siguiente = nodo.siguiente
             nodo.siguiente.anterior = nodo.anterior
+            nodo.anterior = None
+            nodo.siguiente = None
 
-
-        ######################## TERMINAR   
-
+        elif nodo == self.cabeza:
+            return self.delete_first()
+        elif nodo == self.cola:
+            return self.delete_last()
+        
+        self.tamano -= 1
+        return nodo.dato
+         
+    
     def delete_first(self):
-        # Coste: O(?)
+        # Coste: O(1)
         # Si la lista esta vacia: raise IndexError("..."), como list.pop().
         # Devuelve el dato borrado. Pista: es un caso particular de delete_node.
         if self.tamano == 0:
             raise IndexError("delete_first sobre lista vacía")
 
-        ## TERMINAR
+        if self.tamano == 1:
+            aBorrar = self.cabeza
+            self.cabeza = self.cola = None
+            self.tamano -= 1
+            return aBorrar.dato
+
+        aBorrar = self.cabeza
+        self.cabeza = self.cabeza.siguiente
+        self.cabeza.anterior = None
+
+        aBorrar.siguiente = None
+        aBorrar.anterior = None
+
+        self.tamano -= 1
+        return aBorrar.dato
         
     def delete_last(self):
-        # Coste: O(?)
+        # Coste: O(1)
         # Si la lista esta vacia: raise IndexError("..."), como list.pop().
-        raise NotImplementedError
+        if self.tamano == 0:
+            raise IndexError(" delete from empty list")
+        if self.tamano == 1:
+            aBorrar = self.cabeza
+            self.cabeza = self.cola = None
+            self.tamano -= 1
+            return aBorrar.dato
+        
+        aBorrar = self.cola
+        self.cola = self.cola.anterior
+        self.cola.siguiente = None
+        
+        aBorrar.siguiente = None
+        aBorrar.anterior = None
+        self.tamano -= 1
+
+        return aBorrar.dato
 
 
     # --- Palindromo ---------------------------------------------------------
 
     ### el suelo de una division es n//m en python
     def es_palindromo(self):
-        # Coste: O(?) en tiempo y O(?) en memoria auxiliar.
-        # TODO: dos punteros, inicio = self.cabeza y fin = self.cola, que
-        #       avanzan hacia el centro. Bastan tamano // 2 comparaciones.
-        if self.tamano == 1:
+        # Coste: O(n) en tiempo y O(1) en memoria auxiliar.
+        #  dos punteros, inicio = self.cabeza y fin = self.cola, que
+        #  avanzan hacia el centro. Bastan tamano // 2 comparaciones.
+        if self.tamano <= 1:
             return True
-        if self.tamano == 0:
-            return False
         
         actual_i = self.cabeza
         actual_f = self.cola

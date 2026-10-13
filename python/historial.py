@@ -21,7 +21,7 @@
 
 import sys
 
-from lista_doble import ListaDoble
+from lista_doble import ListaDoble, NodoDoble
 
 
 class BrowserHistory:
@@ -32,25 +32,40 @@ class BrowserHistory:
         self.actual = self.paginas.insert_last(homepage)
 
     def visit(self, url):
-        # Coste: O(?)   (pista: "amortizado")
+        # Coste: O(1)   (pista: "amortizado")
         # TODO:
         # 1. Descartar todas las paginas que hay POR DELANTE de self.actual.
         #    Pista: tu ListaDoble ya sabe borrar por el final.
         # 2. Enlazar un nodo nuevo con url justo detras de self.actual.
         # 3. Mover self.actual a ese nodo nuevo.
-        raise NotImplementedError
+        
+        while self.paginas.cola != self.actual and self.paginas.tamano > 0:
+            self.paginas.delete_last()
+
+        nuevo = self.paginas.insert_last(url)
+
+        self.actual = nuevo
+
 
     def back(self, steps):
-        # Coste: O(?)
+        # Coste: O(min(steps, número de páginas anteriores))
         # TODO: mientras queden steps y exista self.actual.anterior,
         #       retrocede self.actual. Devuelve self.actual.dato.
-        raise NotImplementedError
+        while steps > 0 and self.actual.anterior != None:
+            self.actual = self.actual.anterior
+            steps -= 1
+
+        return self.actual.dato
 
     def forward(self, steps):
-        # Coste: O(?)
+        # Coste: O(min(steps, páginas posteriores))
         # TODO: mientras queden steps y exista self.actual.siguiente,
         #       avanza self.actual. Devuelve self.actual.dato.
-        raise NotImplementedError
+        while steps > 0 and self.actual.siguiente != None:
+            self.actual = self.actual.siguiente
+            steps -= 1
+        
+        return self.actual.dato
 
     def __str__(self):
         partes = []
